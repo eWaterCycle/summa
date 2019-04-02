@@ -302,6 +302,80 @@ INCLUDE 'summaversion.inc'
 
 contains
 
+ function get_hype_time() result(ret) bind(c, name="get_hype_time")
+     implicit none
+     integer :: ret
+ end function get_hype_time
+
+
+ function get_end_time() result(ret) bind(c, name="get_hype_end_time")
+     implicit none
+     integer :: ret
+ end function get_end_time
+
+
+ function get_time_step() result(ret) bind(c, name="get_hype_time_step")
+     implicit none
+     integer :: ret
+ end function get_time_step
+
+
+ function convert_hype_time(idate) result(ret)
+     implicit none
+     integer :: ret, idate
+ end function convert_hype_time
+
+
+ function get_num_output_fields() result(ret) bind(c, name="get_num_ovars")
+     implicit none
+     integer :: ret
+ end function get_num_output_fields
+
+
+ subroutine get_output_name(index, dest) bind(c, name="get_ovar_name")
+     implicit none
+     integer :: index, dest
+ end subroutine get_output_name
+
+
+ subroutine get_output_units(index, dest) bind(c, name="get_ovar_units")
+     implicit none
+     integer :: index, dest
+ end subroutine get_output_units
+
+
+ function get_num_subbasins() result(ret) bind(c, name="get_num_basins")
+     implicit none
+     integer :: ret
+ end function get_num_subbasins
+
+
+ subroutine get_basin_field(index, targetarr) bind(c, name="get_ovar_values")
+     implicit none
+     integer :: index, targetarr
+ end subroutine get_basin_field
+
+
+ subroutine get_latlons(targetlatarr, targetlonarr) bind(c, name="get_latlons")
+
+     use, intrinsic :: ISO_C_BINDING
+     use var_lookup, only: iLook_attr
+     use globalData, only: nHRUfile, gru_struc
+
+     implicit none
+
+     real(kind=C_FLOAT), intent(out) :: targetlatarr(nHRUfile)
+     real(kind=C_FLOAT), intent(out) :: targetlonarr(nHRUfile)
+     integer :: iGRU, jHRU
+
+     do iGRU = 1, nGRU
+       do jHRU = 1, gru_struc(iGRU)%hruCount
+         targetlatarr(iGRU + jHRU) = attrStruct%gru(iGRU)%hru(jHRU)%var(iLookATTR%latitude)
+         targetlonarr(iGRU + jHRU) = attrStruct%gru(iGRU)%hru(jHRU)%var(iLookATTR%longitude)
+       end do
+     end do
+
+ end subroutine get_latlons
 
  function initialize(dir, iseq) RESULT(istat) bind(c, name="init_hype")
    use, intrinsic :: iso_c_binding
@@ -309,7 +383,7 @@ contains
    integer(kind=c_int), intent(in), optional           :: iseq
    integer(kind=c_int) :: istat
 
-   istat=0    
+   istat=0
 
   ! *****************************************************************************
   ! *** inital priming -- get command line arguments, identify files, etc.
