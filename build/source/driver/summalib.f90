@@ -295,6 +295,23 @@ real(dp)                         :: elapsedWrite               ! elapsed time fo
 integer(i4b), dimension(8)       :: startPhysics,endPhysics    ! date/time for the start and end of the physics
 real(dp)                         :: elapsedPhysics             ! elapsed time for the physics
 
+! Variables we want to add
+!'scalarTotalRunoff',
+!'scalarGroundEvaporation',
+!'pptrate',
+!'scalarCanopyEvaporation',
+!'scalarCanopyTranspiration',
+!'scalarSnowSublimation',
+!'scalarCanopySublimation',
+!'scalarSWE',
+!'scalarTotalSoilWat',
+!'scalarCanopyWat'
+!'scalarNetRadiation',
+!'scalarLatHeatTotal',
+!'scalarSenHeatTotal',
+!'scalarCanairNetNrgFlux',
+!'scalarCanopyNetNrgFlux',
+!'scalarGroundNetNrgFlux'
 
 ! version information generated during compiling
 INCLUDE 'summaversion.inc'
@@ -344,15 +361,22 @@ contains
  end subroutine get_output_units
 
 
- function get_num_subbasins() result(ret) bind(c, name="get_num_basins")
+ function get_num_basins() result(ret) bind(c, name="get_num_basins")
+     use globalData, only: nHRUfile
+
      implicit none
      integer :: ret
- end function get_num_subbasins
+     ret = nHRUfile
+
+ end function get_num_basins
 
 
  subroutine get_basin_field(index, targetarr) bind(c, name="get_ovar_values")
+
      implicit none
-     integer :: index, targetarr
+     integer, intent(in)  :: index
+     integer, intent(out) :: targetarr
+
  end subroutine get_basin_field
 
 
