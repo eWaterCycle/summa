@@ -302,28 +302,28 @@ INCLUDE 'summaversion.inc'
 
 contains
 
- function get_hype_time() result(ret) bind(c, name="get_hype_time")
+ function get_summa_time() result(ret) bind(c, name="get_summa_time")
      implicit none
      integer :: ret
- end function get_hype_time
+ end function get_summa_time
 
 
- function get_end_time() result(ret) bind(c, name="get_hype_end_time")
+ function get_end_time() result(ret) bind(c, name="get_summa_end_time")
      implicit none
      integer :: ret
  end function get_end_time
 
 
- function get_time_step() result(ret) bind(c, name="get_hype_time_step")
+ function get_time_step() result(ret) bind(c, name="get_summa_time_step")
      implicit none
      integer :: ret
  end function get_time_step
 
 
- function convert_hype_time(idate) result(ret)
+ function convert_summa_time(idate) result(ret)
      implicit none
      integer :: ret, idate
- end function convert_hype_time
+ end function convert_summa_time
 
 
  function get_num_output_fields() result(ret) bind(c, name="get_num_ovars")
@@ -377,7 +377,7 @@ contains
 
  end subroutine get_latlons
 
- function initialize(dir, iseq) RESULT(istat) bind(c, name="init_hype")
+ function initialize(dir, iseq) RESULT(istat) bind(c, name="init_summa")
    use, intrinsic :: iso_c_binding
    character(kind=c_char), dimension(*), intent(in), optional  :: dir
    integer(kind=c_int), intent(in), optional           :: iseq
