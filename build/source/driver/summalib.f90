@@ -401,7 +401,7 @@ contains
        do jHRU = 1, gru_struc(iGRU)%hruCount
          select case (index)
          case (1) ! total runoff
-           targetarr(iGRU + jHRU) = fluxStruct%gru(iGRU)%hru(jHRU)%var(iLookFLUX%scalarTotalRunoff)%dat(modelTimeStep)
+           targetarr((iGRU-1) * gru_struc(iGRU)%hruCount + jHRU) = fluxStruct%gru(iGRU)%hru(jHRU)%var(iLookFLUX%scalarTotalRunoff)%dat(1)
          end select
        end do
      end do
@@ -423,8 +423,8 @@ contains
 
      do iGRU = 1, nGRU
        do jHRU = 1, gru_struc(iGRU)%hruCount
-         targetlatarr(iGRU + jHRU) = attrStruct%gru(iGRU)%hru(jHRU)%var(iLookATTR%latitude)
-         targetlonarr(iGRU + jHRU) = attrStruct%gru(iGRU)%hru(jHRU)%var(iLookATTR%longitude)
+         targetlatarr((iGRU-1) * gru_struc(iGRU)%hruCount + jHRU) = attrStruct%gru(iGRU)%hru(jHRU)%var(iLookATTR%latitude)
+         targetlonarr((iGRU-1) * gru_struc(iGRU)%hruCount + jHRU) = attrStruct%gru(iGRU)%hru(jHRU)%var(iLookATTR%longitude)
        end do
      end do
 
