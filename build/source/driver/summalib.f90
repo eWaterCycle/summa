@@ -307,6 +307,8 @@ INCLUDE 'summaversion.inc'
 
 contains
 
+
+
  function get_start_time() result(ret) bind(c, name="get_summa_start_time")
      implicit none
      real(KIND=C_FLOAT) :: ret
@@ -871,6 +873,29 @@ contains
   timeGRU(:) = realMissing ! initialize because used for ranking
 
 end function initialize
+
+
+! ****************************************************************************
+! *** loop through time until
+! ****************************************************************************
+
+function update_until(tend) result(istat) bind(c, name="update_summa_until")
+  use, intrinsic :: iso_c_binding
+  real(kind=c_float),intent(in) :: tend   ! unit days (julian days, same as get_model_time)
+  integer(kind=c_int) :: istat
+
+  real(kind=c_float) current
+  current = get_current_time()
+
+  ! loop through time
+  do while (current < tend .and. modelTimeStep < numtim)
+
+    istat = update()
+    current = get_current_time()
+
+  end do  ! (looping through time)
+end function
+
 
 
 ! ****************************************************************************
