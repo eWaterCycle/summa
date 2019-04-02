@@ -154,6 +154,14 @@ LIBLAPACK = $(NCAR_LIBS_MKL)
 
 endif
 
+# gfortran Cartesius
+ifeq "$(FC_ENV)" "ifort-cartesius"
+ NCDF_PATH = ${SURFSARA_NETCDF_ROOT}
+ LAPK_PATH = /hpc/sw/lapack-3.4.2-intel/
+ # define the lapack libraries
+ LIBLAPACK = -L$(LAPK_PATH)/lib -llapack -lblas
+endif
+
 # Portland compiler
 ifeq "$(FC_ENV)" "pgfortran"
  NCDF_PATH = /opt/netcdf4-pgi
@@ -234,6 +242,11 @@ SUMMA_UTILMS= \
 		updatState.f90 \
 		matrixOper.f90
 UTILMS = $(patsubst %, $(ENGINE_DIR)/%, $(SUMMA_UTILMS))
+
+# interface modules
+SUMMA_INTERFACE= \
+		summalib.f90
+INTERFACE = $(patsubst %, $(DRIVER_DIR)/%, $(SUMMA_INTERFACE))
 
 # Model guts
 SUMMA_MODGUT= \
@@ -324,7 +337,7 @@ NETCDF = $(patsubst %, $(NETCDF_DIR)/%, $(SUMMA_NETCDF))
 COMM_ALL = $(NRUTIL) $(NRPROC) $(HOOKUP) $(DATAMS) $(UTILMS)
 
 # ... stitch together SUMMA programs
-SUMMA_ALL = $(NETCDF) $(PRELIM) $(MODRUN) $(SOLVER)
+SUMMA_ALL = $(NETCDF) $(PRELIM) $(MODRUN) $(SOLVER) $(INTERFACE)
 
 # Define the driver routine
 SUMMA_DRIVER= \
