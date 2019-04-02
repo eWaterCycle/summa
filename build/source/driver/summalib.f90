@@ -123,6 +123,10 @@ USE globalData,only:globalPrintFlag                         ! global print flag
 USE globalData,only:integerMissing                          ! missing integer value
 USE globalData,only:realMissing                             ! missing double precision value
 USE globalData,only:yes,no                                  ! .true. and .false.
+USE globalData,only:dJulianStart                            ! julian day of start time of simulation
+USE globalData,only:dJulianFinsh                            ! julian day of end time of simulation
+USE globalData,only:data_step                               ! length of time steps for the outermost timeloo
+USE multiconst,only:secprday
 ! provide access to Noah-MP parameters
 USE NOAHMP_VEG_PARAMETERS,only:SAIM,LAIM                    ! 2-d tables for stem area index and leaf area index (vegType,month)
 USE NOAHMP_VEG_PARAMETERS,only:HVT,HVB                      ! height at the top and bottom of vegetation (vegType)
@@ -320,29 +324,36 @@ INCLUDE 'summaversion.inc'
 contains
 
 
-
  function get_start_time() result(ret) bind(c, name="get_summa_start_time")
      implicit none
-     integer :: ret
- end function get_summa_time
+     real(KIND=C_FLOAT) :: ret
+    ret = dJulianStart                                                    ! unit days
+ end function get_start_time
 
+
+ function get_current_time() result(ret) bind(c, name="get_summa_current_time")
+     implicit none
+     real(KIND=C_FLOAT) :: ret
+
+     if(modelTimeStep==1)then
+      ret = dJulianStart
+     else
+      ret = dJulianStart + (data_step*real(modelTimeStep-1,dp))/secprday  ! unit days
+     end if
+ end function get_current_time
 
  function get_end_time() result(ret) bind(c, name="get_summa_end_time")
      implicit none
-     integer :: ret
+     real(KIND=C_FLOAT) :: ret
+    ret = dJulianFinsh                                                    ! unit days
  end function get_end_time
 
 
  function get_time_step() result(ret) bind(c, name="get_summa_time_step")
-     implicit none
-     integer :: ret
- end function get_time_step
-
-
- function convert_summa_time(idate) result(ret)
-     implicit none
-     integer :: ret, idate
- end function convert_summa_time
+    implicit none
+    integer :: ret
+    ret = data_step                                                       ! unit seconds
+end function get_time_step
 
 
  function get_num_output_fields() result(ret) bind(c, name="get_num_ovars")
@@ -896,19 +907,6 @@ contains
   ! aggregate the elapsed time for the initialization
   elapsedInit = elapsedSec(startInit, endInit)
 
-end function initialize
-
-
-! ****************************************************************************
-! *** loop through time
-! ****************************************************************************
-
-FUNCTION update() RESULT(istat) bind(c, name="update_summa")
-  USE, INTRINSIC :: ISO_C_BINDING
-  integer(kind=c_int) :: istat
-
-  istat=0
-
   ! initialize time step index
   statCounter(1:maxVarFreq) = 1
   outputTimeStep(1:maxVarFreq) = 1
@@ -939,6 +937,7 @@ function update_until(tend) result(istat) bind(c, name="update_summa_until")
 
   real(kind=c_float) current
   current = get_current_time()
+  istat=0
 
   ! loop through time
   do while (current < tend .and. modelTimeStep < numtim)
@@ -948,7 +947,6 @@ function update_until(tend) result(istat) bind(c, name="update_summa_until")
 
   end do  ! (looping through time)
 end function
-
 
 
 ! ****************************************************************************
@@ -1310,8 +1308,6 @@ FUNCTION update() RESULT(istat) bind(c, name="update_summa")
     call writeRestart(restartFile,nGRU,nHRU,prog_meta,progStruct,maxLayers,maxSnowLayers,indx_meta,indxStruct,err,message)
     call handle_err(err,message)
    end if
-
-  end do  ! (looping through time)
 
 
 end function update
