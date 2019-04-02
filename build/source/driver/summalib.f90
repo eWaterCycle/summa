@@ -401,7 +401,7 @@ contains
        do jHRU = 1, gru_struc(iGRU)%hruCount
          select case (index)
          case (1) ! total runoff
-           targetarr(iGRU + jHRU) = fluxStruct%gru(iGRU)%hru(jHRU)%var(iLookFLUX%scalarTotalRunoff)%dat(1)
+           targetarr(iGRU + jHRU) = fluxStruct%gru(iGRU)%hru(jHRU)%var(iLookFLUX%scalarTotalRunoff)%dat(modelTimeStep)
          end select
        end do
      end do
