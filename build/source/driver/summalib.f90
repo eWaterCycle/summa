@@ -108,8 +108,6 @@ USE globalData,only:averageFlux_meta                        ! metadata for time-
 USE globalData,only:model_decisions                         ! model decision structure
 ! provide access to global data
 USE globalData,only:dNaN                                    ! double precision NaN
-USE globalData,only:dJulianStart                            ! julian day of start time of simulation
-USE globalData,only:dJulianFinsh                            ! julian day of end time of simulation
 USE globalData,only:refTime                                 ! reference time
 USE globalData,only:startTime                               ! start time
 USE globalData,only:finshTime                               ! end time
@@ -118,7 +116,6 @@ USE globalData,only:gru_struc                               ! gru-hru mapping st
 USE globalData,only:localParFallback                        ! local column default parameters
 USE globalData,only:basinParFallback                        ! basin-average default parameters
 USE globalData,only:structInfo                              ! information on the data structures
-USE globalData,only:data_step                               ! length of time steps for the outermost timeloop
 USE globalData,only:numtim                                  ! number of time steps
 USE globalData,only:urbanVegCategory                        ! vegetation category for urban areas
 USE globalData,only:greenVegFrac_monthly                    ! fraction of green vegetation in each month (0-1)
@@ -126,8 +123,6 @@ USE globalData,only:globalPrintFlag                         ! global print flag
 USE globalData,only:integerMissing                          ! missing integer value
 USE globalData,only:realMissing                             ! missing double precision value
 USE globalData,only:yes,no                                  ! .true. and .false.
-!seconds per day
-USE multiconst,only:secprday
 ! provide access to Noah-MP parameters
 USE NOAHMP_VEG_PARAMETERS,only:SAIM,LAIM                    ! 2-d tables for stem area index and leaf area index (vegType,month)
 USE NOAHMP_VEG_PARAMETERS,only:HVT,HVB                      ! height at the top and bottom of vegetation (vegType)
@@ -300,6 +295,23 @@ real(dp)                         :: elapsedWrite               ! elapsed time fo
 integer(i4b), dimension(8)       :: startPhysics,endPhysics    ! date/time for the start and end of the physics
 real(dp)                         :: elapsedPhysics             ! elapsed time for the physics
 
+! Variables we want to add
+!'scalarTotalRunoff',
+!'scalarGroundEvaporation',
+!'pptrate',
+!'scalarCanopyEvaporation',
+!'scalarCanopyTranspiration',
+!'scalarSnowSublimation',
+!'scalarCanopySublimation',
+!'scalarSWE',
+!'scalarTotalSoilWat',
+!'scalarCanopyWat'
+!'scalarNetRadiation',
+!'scalarLatHeatTotal',
+!'scalarSenHeatTotal',
+!'scalarCanairNetNrgFlux',
+!'scalarCanopyNetNrgFlux',
+!'scalarGroundNetNrgFlux'
 
 ! version information generated during compiling
 INCLUDE 'summaversion.inc'
@@ -311,34 +323,26 @@ contains
 
  function get_start_time() result(ret) bind(c, name="get_summa_start_time")
      implicit none
-     real(KIND=C_FLOAT) :: ret
-    ret = dJulianStart                                                    ! unit days
- end function get_start_time
+     integer :: ret
+ end function get_summa_time
 
-
- function get_current_time() result(ret) bind(c, name="get_summa_current_time")
-     implicit none
-     real(KIND=C_FLOAT) :: ret
-
-     if(modelTimeStep==1)then
-      ret = dJulianStart
-     else
-      ret = dJulianStart + (data_step*real(modelTimeStep-1,dp))/secprday  ! unit days
-     end if
- end function get_current_time
 
  function get_end_time() result(ret) bind(c, name="get_summa_end_time")
      implicit none
-     real(KIND=C_FLOAT) :: ret
-    ret = dJulianFinsh                                                    ! unit days
+     integer :: ret
  end function get_end_time
 
 
  function get_time_step() result(ret) bind(c, name="get_summa_time_step")
-    implicit none
-    integer :: ret
-    ret = data_step                                                       ! unit seconds
+     implicit none
+     integer :: ret
  end function get_time_step
+
+
+ function convert_summa_time(idate) result(ret)
+     implicit none
+     integer :: ret, idate
+ end function convert_summa_time
 
 
  function get_num_output_fields() result(ret) bind(c, name="get_num_ovars")
@@ -359,15 +363,51 @@ contains
  end subroutine get_output_units
 
 
- function get_num_subbasins() result(ret) bind(c, name="get_num_basins")
+ function get_num_basins() result(ret) bind(c, name="get_num_basins")
+     use globalData, only: nHRUfile
+
      implicit none
      integer :: ret
- end function get_num_subbasins
+     ret = nHRUfile
+
+ end function get_num_basins
 
 
  subroutine get_basin_field(index, targetarr) bind(c, name="get_ovar_values")
+     use globalData, only: nHRUfile
+
      implicit none
-     integer :: index, targetarr
+     integer, intent(in)  :: index
+     real(kind=C_FLOAT), intent(out) :: targetarr(nHRUfile)
+     integer :: iGRU, jHRU
+
+     ! Variables we want to add
+     !'scalarTotalRunoff',
+     !'scalarGroundEvaporation',
+     !'pptrate',
+     !'scalarCanopyEvaporation',
+     !'scalarCanopyTranspiration',
+     !'scalarSnowSublimation',
+     !'scalarCanopySublimation',
+     !'scalarSWE',
+     !'scalarTotalSoilWat',
+     !'scalarCanopyWat'
+     !'scalarNetRadiation',
+     !'scalarLatHeatTotal',
+     !'scalarSenHeatTotal',
+     !'scalarCanairNetNrgFlux',
+     !'scalarCanopyNetNrgFlux',
+     !'scalarGroundNetNrgFlux'
+
+     do iGRU = 1, nGRU
+       do jHRU = 1, gru_struc(iGRU)%hruCount
+         select case (index)
+         case (1) ! total runoff
+           targetarr(iGRU + jHRU) = fluxStruct%gru(iGRU)%hru(jHRU)%var(iLookFLUX%scalarTotalRunoff)%dat(modelTimeStep)
+         end select
+       end do
+     end do
+
  end subroutine get_basin_field
 
 
@@ -856,6 +896,19 @@ contains
   ! aggregate the elapsed time for the initialization
   elapsedInit = elapsedSec(startInit, endInit)
 
+end function initialize
+
+
+! ****************************************************************************
+! *** loop through time
+! ****************************************************************************
+
+FUNCTION update() RESULT(istat) bind(c, name="update_summa")
+  USE, INTRINSIC :: ISO_C_BINDING
+  integer(kind=c_int) :: istat
+
+  istat=0
+
   ! initialize time step index
   statCounter(1:maxVarFreq) = 1
   outputTimeStep(1:maxVarFreq) = 1
@@ -1257,6 +1310,8 @@ FUNCTION update() RESULT(istat) bind(c, name="update_summa")
     call writeRestart(restartFile,nGRU,nHRU,prog_meta,progStruct,maxLayers,maxSnowLayers,indx_meta,indxStruct,err,message)
     call handle_err(err,message)
    end if
+
+  end do  ! (looping through time)
 
 
 end function update
