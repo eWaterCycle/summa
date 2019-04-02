@@ -25,14 +25,18 @@ program multi_driver
 ! *****************************************************************************
 use,intrinsic :: iso_c_binding
 USE,intrinsic :: ieee_arithmetic                            ! IEEE arithmetic (obviously)
-use summalib, only: initialize, update, finalize
+use summalib, only: initialize, update, finalize, modelTimeStep
+USE globalData,only:numtim                                  ! number of time steps
 implicit none
 
 integer(kind=c_int) :: istat
 
 !'main routine'
 istat = initialize()
-istat = update()
+! loop through time
+do modelTimeStep=1,numtim
+    istat = update()
+end do  ! (looping through time)
 istat = finalize()
 
 end program multi_driver

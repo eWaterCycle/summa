@@ -841,19 +841,6 @@ contains
   ! aggregate the elapsed time for the initialization
   elapsedInit = elapsedSec(startInit, endInit)
 
-end function initialize
-
-
-! ****************************************************************************
-! *** loop through time
-! ****************************************************************************
-
-FUNCTION update() RESULT(istat) bind(c, name="update_summa")
-  USE, INTRINSIC :: ISO_C_BINDING
-  integer(kind=c_int) :: istat
-
-  istat=0
-
   ! initialize time step index
   statCounter(1:maxVarFreq) = 1
   outputTimeStep(1:maxVarFreq) = 1
@@ -870,8 +857,18 @@ FUNCTION update() RESULT(istat) bind(c, name="update_summa")
   call handle_err(err,'unable to allocate space for GRU timing')
   timeGRU(:) = realMissing ! initialize because used for ranking
 
-  ! loop through time
-  do modelTimeStep=1,numtim
+end function initialize
+
+
+! ****************************************************************************
+! *** loop through time
+! ****************************************************************************
+
+FUNCTION update() RESULT(istat) bind(c, name="update_summa")
+  USE, INTRINSIC :: ISO_C_BINDING
+  integer(kind=c_int) :: istat
+
+  istat=0
 
    ! initialize the start of the data read
    call date_and_time(values=startRead)
@@ -1222,8 +1219,6 @@ FUNCTION update() RESULT(istat) bind(c, name="update_summa")
     call writeRestart(restartFile,nGRU,nHRU,prog_meta,progStruct,maxLayers,maxSnowLayers,indx_meta,indxStruct,err,message)
     call handle_err(err,message)
    end if
-
-  end do  ! (looping through time)
 
 
 end function update
