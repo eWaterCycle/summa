@@ -324,6 +324,7 @@ contains
      end if
  end function get_current_time
 
+
  function get_end_time() result(ret) bind(c, name="get_summa_end_time")
      implicit none
      real(KIND=C_FLOAT) :: ret
@@ -345,47 +346,78 @@ end function get_time_step
  end function get_num_output_fields
 
 
+ subroutine to_c_string(source, dest)
+     implicit none
+
+     character(len=32), intent(in) :: source
+     character(kind=C_CHAR), intent(out)  :: dest(*)
+     integer                              :: j,k
+
+     k = LEN(TRIM(source))
+     do j=1,k
+         dest(j) = source(j:j)
+     end do
+     dest(k+1) = C_NULL_CHAR
+
+ end subroutine to_c_string
+
+
  subroutine get_output_name(index, dest) bind(c, name="get_ovar_name")
      implicit none
      integer :: index
-     character(len=48)::dest
-
-
+     character(len=32) :: source
+     character(kind=c_char)::dest(*)
      do iGRU = 1, nGRU
        do jHRU = 1, gru_struc(iGRU)%hruCount
          select case (index)
          case (1)
-             dest = 'total runoff'
+             source = 'total runoff'
+             call to_c_string(source, dest)
          case (2)
-             dest = 'evaporation from soil'
+             source = 'evaporation from soil'
+             call to_c_string(source, dest)
          case (3)
-             dest = 'precipitation'
+             source = 'precipitation'
+             call to_c_string(source, dest)
          case (4)
-             dest = 'evaporation from vegetation'
+             source = 'evaporation from vegetation'
+             call to_c_string(source, dest)
          case (5)
-             dest = 'transpiration from vegetation'
+             source = 'transpiration from vegetation'
+             call to_c_string(source, dest)
          case (6)
-             dest = 'sublimation from snow surface'
+             source = 'sublimation from snow surface'
+             call to_c_string(source, dest)
          case (7)
-             dest = 'sublimation from vegetation surface'
+             source = 'sublimation from vegetation surface'
+             call to_c_string(source, dest)
          case (8)
-             dest = 'snow water equivalent'
+             source = 'snow water equivalent'
+             call to_c_string(source, dest)
          case (9)
-             dest = 'soil moisture'
+             source = 'soil moisture'
+             call to_c_string(source, dest)
          case (10)
-             dest = 'canopy moisture'
+             source = 'canopy moisture'
+             call to_c_string(source, dest)
          case (11)
-             dest = 'net radiation'
+             source = 'net radiation'
+             call to_c_string(source, dest)
          case (12)
-             dest = 'latent heat'
+             source = 'latent heat'
+             call to_c_string(source, dest)
          case (13)
-             dest = 'sensible heat'
+             source = 'sensible heat'
+             call to_c_string(source, dest)
          case (14)
-             dest = 'canopy air energy flux'
+             source = 'canopy air energy flux'
+             call to_c_string(source, dest)
          case (15)
-             dest = 'vegetation energy flux'
+             source = 'vegetation energy flux'
+             call to_c_string(source, dest)
          case (16)
-             dest = 'ground energy flux'
+             source = 'ground energy flux'
+             call to_c_string(source, dest)
          end select
        end do
      end do
@@ -394,44 +426,61 @@ end function get_time_step
 
  subroutine get_output_units(index, dest) bind(c, name="get_ovar_units")
      implicit none
-     integer :: index,
-     character(len=48) :: dest
+     integer :: index
+     character(len=32) :: source
+     character(kind=c_char)::dest(*)
 
      do iGRU = 1, nGRU
        do jHRU = 1, gru_struc(iGRU)%hruCount
          select case (index)
          case (1) ! total runoff
-             dest = 'm s-1'
+             source = 'm s-1'
+             call to_c_string(source, dest)
          case (2) ! evaporation from soil
-             dest = 'kg m-2 s-1'
+             source = 'kg m-2 s-1'
+             call to_c_string(source, dest)
          case (3) ! precipitation rate
-             dest = 'kg m-2 s-1'
+             source = 'kg m-2 s-1'
+             call to_c_string(source, dest)
          case (4) ! evaporation from vegetation
-             dest = 'kg m-2 s-1'
+             source = 'kg m-2 s-1'
+             call to_c_string(source, dest)
          case (5) ! transpiration from vegetation
-             dest = 'kg m-2 s-1'
+             source = 'kg m-2 s-1'
+             call to_c_string(source, dest)
          case (6) ! sublimation from snow surface
-             dest = 'kg m-2 s-1'
+             source = 'kg m-2 s-1'
+             call to_c_string(source, dest)
          case (7) ! sublimation from vegetation surface
-             dest = 'kg m-2 s-1'
+             source = 'kg m-2 s-1'
+             call to_c_string(source, dest)
          case (8) ! snow water equivalent
-             dest = 'kg m-2'
+             source = 'kg m-2'
+             call to_c_string(source, dest)
          case (9) ! soil moisture
-             dest = 'kg m-2'
+             source = 'kg m-2'
+             call to_c_string(source, dest)
          case (10) ! canopy moisture
-             dest = 'kg m-2'
+             source = 'kg m-2'
+             call to_c_string(source, dest)
          case (11) ! net radiation
-             dest = 'W m-2'
+             source = 'W m-2'
+             call to_c_string(source, dest)
          case (12) ! latent heat
-             dest = 'W m-2'
+             source = 'W m-2'
+             call to_c_string(source, dest)
          case (13) ! sensible heat
-             dest = 'W m-2'
+             source = 'W m-2'
+             call to_c_string(source, dest)
          case (14) ! canopy air energy flux
-             dest = 'W m-2'
+             source = 'W m-2'
+             call to_c_string(source, dest)
          case (15) ! vegetation energy flux
-             dest = 'W m-2'
+             source = 'W m-2'
+             call to_c_string(source, dest)
          case (16) ! ground energy flux
-             dest = 'W m-2'
+             source = 'W m-2'
+             call to_c_string(source, dest)
          end select
        end do
      end do
@@ -465,9 +514,9 @@ end function get_time_step
          case (2) ! evaporation from soil
            targetarr((iGRU-1) * gru_struc(iGRU)%hruCount + jHRU) = &
                fluxStruct%gru(iGRU)%hru(jHRU)%var(iLookFLUX%scalarGroundEvaporation)%dat(1)
-         case (3) ! precipitation
-           targetarr((iGRU-1) * gru_struc(iGRU)%hruCount + jHRU) = &
-               forcStruct%gru(iGRU)%hru(jHRU)%var(iLookFORC%pptrate)%dat(1)
+         !case (3) ! precipitation
+         !  targetarr((iGRU-1) * gru_struc(iGRU)%hruCount + jHRU) = &
+         !      forcStruct%gru(iGRU)%hru(jHRU)%var(iLookFORC%pptrate)%dat(1)
          case (4) ! evaporation from vegetation
            targetarr((iGRU-1) * gru_struc(iGRU)%hruCount + jHRU) = &
                fluxStruct%gru(iGRU)%hru(jHRU)%var(iLookFLUX%scalarCanopyEvaporation)%dat(1)
@@ -534,6 +583,7 @@ end function get_time_step
      end do
 
  end subroutine get_latlons
+
 
  function initialize(dir, iseq) RESULT(istat) bind(c, name="init_summa")
    use, intrinsic :: iso_c_binding
@@ -1014,6 +1064,7 @@ end function get_time_step
   allocate(totalFluxCalls(nGRU), timeGRU(nGRU), timeGRUstart(nGRU), timeGRUcompleted(nGRU), ixExpense(nGRU), stat=err)
   call handle_err(err,'unable to allocate space for GRU timing')
   timeGRU(:) = realMissing ! initialize because used for ranking
+  istat = update()
 
 end function initialize
 
@@ -1055,6 +1106,7 @@ FUNCTION update() RESULT(istat) bind(c, name="update_summa")
    call date_and_time(values=startRead)
 
    ! read forcing data
+   print*, modelTimeStep
    call read_force(&
                    ! input
                    modelTimeStep,      & ! intent(in):    time step index

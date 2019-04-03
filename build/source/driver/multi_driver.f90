@@ -33,6 +33,7 @@ integer(kind=c_int) :: istat
 
 !'main routine'
 istat = initialize()
+
 ! loop through time
 do modelTimeStep=1,numtim
     istat = update()
