@@ -341,6 +341,7 @@ end function get_time_step
  function get_num_output_fields() result(ret) bind(c, name="get_num_ovars")
      implicit none
      integer :: ret
+     ret = 16
  end function get_num_output_fields
 
 
@@ -393,7 +394,47 @@ end function get_time_step
 
  subroutine get_output_units(index, dest) bind(c, name="get_ovar_units")
      implicit none
-     integer :: index, dest
+     integer :: index,
+     character(len=48) :: dest
+
+     do iGRU = 1, nGRU
+       do jHRU = 1, gru_struc(iGRU)%hruCount
+         select case (index)
+         case (1) ! total runoff
+             dest = 'm s-1'
+         case (2) ! evaporation from soil
+             dest = 'kg m-2 s-1'
+         case (3) ! precipitation rate
+             dest = 'kg m-2 s-1'
+         case (4) ! evaporation from vegetation
+             dest = 'kg m-2 s-1'
+         case (5) ! transpiration from vegetation
+             dest = 'kg m-2 s-1'
+         case (6) ! sublimation from snow surface
+             dest = 'kg m-2 s-1'
+         case (7) ! sublimation from vegetation surface
+             dest = 'kg m-2 s-1'
+         case (8) ! snow water equivalent
+             dest = 'kg m-2'
+         case (9) ! soil moisture
+             dest = 'kg m-2'
+         case (10) ! canopy moisture
+             dest = 'kg m-2'
+         case (11) ! net radiation
+             dest = 'W m-2'
+         case (12) ! latent heat
+             dest = 'W m-2'
+         case (13) ! sensible heat
+             dest = 'W m-2'
+         case (14) ! canopy air energy flux
+             dest = 'W m-2'
+         case (15) ! vegetation energy flux
+             dest = 'W m-2'
+         case (16) ! ground energy flux
+             dest = 'W m-2'
+         end select
+       end do
+     end do
  end subroutine get_output_units
 
 
@@ -414,23 +455,6 @@ end function get_time_step
      integer, intent(in)  :: index
      real(kind=C_FLOAT), intent(out) :: targetarr(nHRUfile)
      integer :: iGRU, jHRU
-
-     !'scalarTotalRunoff',
-     !'scalarGroundEvaporation',
-     !'pptrate',
-     !'scalarCanopyEvaporation',
-     !'scalarCanopyTranspiration',
-     !'scalarSnowSublimation',
-     !'scalarCanopySublimation',
-     !'scalarSWE',
-     !'scalarTotalSoilWat',
-     !'scalarCanopyWat'
-     !'scalarNetRadiation',
-     !'scalarLatHeatTotal',
-     !'scalarSenHeatTotal',
-     !'scalarCanairNetNrgFlux',
-     !'scalarCanopyNetNrgFlux',
-     !'scalarGroundNetNrgFlux'
 
      do iGRU = 1, nGRU
        do jHRU = 1, gru_struc(iGRU)%hruCount
