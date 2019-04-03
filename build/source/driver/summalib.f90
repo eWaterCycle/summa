@@ -299,24 +299,6 @@ real(dp)                         :: elapsedWrite               ! elapsed time fo
 integer(i4b), dimension(8)       :: startPhysics,endPhysics    ! date/time for the start and end of the physics
 real(dp)                         :: elapsedPhysics             ! elapsed time for the physics
 
-! Variables we want to add
-!'scalarTotalRunoff',
-!'scalarGroundEvaporation',
-!'pptrate',
-!'scalarCanopyEvaporation',
-!'scalarCanopyTranspiration',
-!'scalarSnowSublimation',
-!'scalarCanopySublimation',
-!'scalarSWE',
-!'scalarTotalSoilWat',
-!'scalarCanopyWat'
-!'scalarNetRadiation',
-!'scalarLatHeatTotal',
-!'scalarSenHeatTotal',
-!'scalarCanairNetNrgFlux',
-!'scalarCanopyNetNrgFlux',
-!'scalarGroundNetNrgFlux'
-
 ! version information generated during compiling
 INCLUDE 'summaversion.inc'
 
@@ -364,7 +346,48 @@ end function get_time_step
 
  subroutine get_output_name(index, dest) bind(c, name="get_ovar_name")
      implicit none
-     integer :: index, dest
+     integer :: index
+     character(len=48)::dest
+
+
+     do iGRU = 1, nGRU
+       do jHRU = 1, gru_struc(iGRU)%hruCount
+         select case (index)
+         case (1)
+             dest = 'total runoff'
+         case (2)
+             dest = 'evaporation from soil'
+         case (3)
+             dest = 'precipitation'
+         case (4)
+             dest = 'evaporation from vegetation'
+         case (5)
+             dest = 'transpiration from vegetation'
+         case (6)
+             dest = 'sublimation from snow surface'
+         case (7)
+             dest = 'sublimation from vegetation surface'
+         case (8)
+             dest = 'snow water equivalent'
+         case (9)
+             dest = 'soil moisture'
+         case (10)
+             dest = 'canopy moisture'
+         case (11)
+             dest = 'net radiation'
+         case (12)
+             dest = 'latent heat'
+         case (13)
+             dest = 'sensible heat'
+         case (14)
+             dest = 'canopy air energy flux'
+         case (15)
+             dest = 'vegetation energy flux'
+         case (16)
+             dest = 'ground energy flux'
+         end select
+       end do
+     end do
  end subroutine get_output_name
 
 
@@ -392,7 +415,6 @@ end function get_time_step
      real(kind=C_FLOAT), intent(out) :: targetarr(nHRUfile)
      integer :: iGRU, jHRU
 
-     ! Variables we want to add
      !'scalarTotalRunoff',
      !'scalarGroundEvaporation',
      !'pptrate',
@@ -414,7 +436,53 @@ end function get_time_step
        do jHRU = 1, gru_struc(iGRU)%hruCount
          select case (index)
          case (1) ! total runoff
-           targetarr((iGRU-1) * gru_struc(iGRU)%hruCount + jHRU) = fluxStruct%gru(iGRU)%hru(jHRU)%var(iLookFLUX%scalarTotalRunoff)%dat(1)
+           targetarr((iGRU-1) * gru_struc(iGRU)%hruCount + jHRU) = &
+               fluxStruct%gru(iGRU)%hru(jHRU)%var(iLookFLUX%scalarTotalRunoff)%dat(1)
+         case (2) ! evaporation from soil
+           targetarr((iGRU-1) * gru_struc(iGRU)%hruCount + jHRU) = &
+               fluxStruct%gru(iGRU)%hru(jHRU)%var(iLookFLUX%scalarGroundEvaporation)%dat(1)
+         case (3) ! precipitation
+           targetarr((iGRU-1) * gru_struc(iGRU)%hruCount + jHRU) = &
+               forcStruct%gru(iGRU)%hru(jHRU)%var(iLookFORC%pptrate)%dat(1)
+         case (4) ! evaporation from vegetation
+           targetarr((iGRU-1) * gru_struc(iGRU)%hruCount + jHRU) = &
+               fluxStruct%gru(iGRU)%hru(jHRU)%var(iLookFLUX%scalarCanopyEvaporation)%dat(1)
+         case (5) ! transpiration from vegetation
+           targetarr((iGRU-1) * gru_struc(iGRU)%hruCount + jHRU) = &
+               fluxStruct%gru(iGRU)%hru(jHRU)%var(iLookFLUX%scalarCanopyTranspiration)%dat(1)
+         case (6) ! sublimation from snow surface
+           targetarr((iGRU-1) * gru_struc(iGRU)%hruCount + jHRU) = &
+               fluxStruct%gru(iGRU)%hru(jHRU)%var(iLookFLUX%scalarSnowSublimation)%dat(1)
+         case (7) ! sublimation from vegetation surface
+           targetarr((iGRU-1) * gru_struc(iGRU)%hruCount + jHRU) = &
+               fluxStruct%gru(iGRU)%hru(jHRU)%var(iLookFLUX%scalarCanopySublimation)%dat(1)
+         case (8) ! snow water equivalent
+           targetarr((iGRU-1) * gru_struc(iGRU)%hruCount + jHRU) = &
+               progStruct%gru(iGRU)%hru(jHRU)%var(iLookPROG%scalarSWE)%dat(1)
+         case (9) ! soil moisture
+           targetarr((iGRU-1) * gru_struc(iGRU)%hruCount + jHRU) = &
+               diagStruct%gru(iGRU)%hru(jHRU)%var(iLookDIAG%scalarTotalSoilWat)%dat(1)
+         case (10) ! canopy moisture
+           targetarr((iGRU-1) * gru_struc(iGRU)%hruCount + jHRU) = &
+               progStruct%gru(iGRU)%hru(jHRU)%var(iLookPROG%scalarCanopyWat)%dat(1)
+         case (11) ! net radiation
+           targetarr((iGRU-1) * gru_struc(iGRU)%hruCount + jHRU) = &
+               fluxStruct%gru(iGRU)%hru(jHRU)%var(iLookFLUX%scalarNetRadiation)%dat(1)
+         case (12) ! latent heat
+           targetarr((iGRU-1) * gru_struc(iGRU)%hruCount + jHRU) = &
+               fluxStruct%gru(iGRU)%hru(jHRU)%var(iLookFLUX%scalarLatHeatTotal)%dat(1)
+         case (13) ! sensible heat
+           targetarr((iGRU-1) * gru_struc(iGRU)%hruCount + jHRU) = &
+               fluxStruct%gru(iGRU)%hru(jHRU)%var(iLookFLUX%scalarSenHeatTotal)%dat(1)
+         case (14) ! canopy air energy flux
+           targetarr((iGRU-1) * gru_struc(iGRU)%hruCount + jHRU) = &
+               fluxStruct%gru(iGRU)%hru(jHRU)%var(iLookFLUX%scalarCanairNetNrgFlux)%dat(1)
+         case (15) ! vegetation energy flux
+           targetarr((iGRU-1) * gru_struc(iGRU)%hruCount + jHRU) = &
+               fluxStruct%gru(iGRU)%hru(jHRU)%var(iLookFLUX%scalarCanopyNetNrgFlux)%dat(1)
+         case (16) ! ground energy flux
+           targetarr((iGRU-1) * gru_struc(iGRU)%hruCount + jHRU) = &
+               fluxStruct%gru(iGRU)%hru(jHRU)%var(iLookFLUX%scalarGroundNetNrgFlux)%dat(1)
          end select
        end do
      end do
