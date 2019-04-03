@@ -342,10 +342,17 @@ SUMMA_ALL = $(NETCDF) $(PRELIM) $(MODRUN) $(SOLVER) $(INTERFACE)
 # Define the driver routine
 SUMMA_DRIVER= \
 		multi_driver.f90
+
+
+BMI_TEST = \
+		testbmi.f90
+
 DRIVER = $(patsubst %, $(DRIVER_DIR)/%, $(SUMMA_DRIVER))
+BMI = $(patsubst %, $(DRIVER_DIR)/%, $(BMI_TEST))
 
 # Define the executable
 DRIVER__EX = summa.exe
+BMI__EX = test_bmi.exe
 
 # Define version number
 VERSIONFILE = $(DRIVER_DIR)/summaversion.inc
@@ -384,6 +391,8 @@ endif
 # Compile
 all: compile_noah compile_comm compile_summa link clean install
 
+bmi: compile_noah compile_comm compile_bmi link_bmi clean install_test
+
 check:
 	$(info)
 	$(info Displaying make variables:)
@@ -421,15 +430,29 @@ compile_summa: update_version
 	$(FC_EXE) $(FLAGS_SUMMA) -c $(SUMMA_ALL) $(DRIVER) \
 	$(INCNETCDF)
 
+compile_bmi: update_version
+	$(FC_EXE) $(FLAGS_SUMMA) -c $(SUMMA_ALL) $(BMI) \
+	$(INCNETCDF)
+
 # link routines
 link:
 	$(FC_EXE) -pg -g *.o $(LIBNETCDF) $(LIBLAPACK) -o $(DRIVER__EX)
+
+# link routines
+link_bmi:
+	$(FC_EXE) -pg -g *.o $(LIBNETCDF) $(LIBLAPACK) -o $(BMI__EX)
 
 # Remove object files
 clean:
 	rm -f *.o
 	rm -f *.mod
 	rm -f soil_veg_gen_parm__genmod.f90
+
+# Copy the executable to the bin directory
+install_test:
+	@mkdir -p $(EXE_PATH)
+	@mv $(BMI__EX) $(EXE_PATH)
+	$(info Add $(NCDF_PATH)/lib to your LD_LIBRARY_PATH)
 
 # Copy the executable to the bin directory
 install:
