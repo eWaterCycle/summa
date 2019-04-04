@@ -589,6 +589,7 @@ end function get_time_step
    use, intrinsic :: iso_c_binding
    character(kind=c_char), dimension(*), intent(in), optional  :: dir
    integer(kind=c_int) :: istat
+   integer :: i
 
    istat=0
 
@@ -602,7 +603,12 @@ end function get_time_step
 
   ! if initialize is called with an argument pointing to the file manager file
   if (present(dir)) then
-    summaFileManagerFile=dir
+    do i=1,256
+      if (dir(i) == C_NULL_CHAR) then
+        exit
+      end if
+      summaFileManagerFile(i:i)=dir(i)  ! copying character array to string
+    end do
   endif
 
   ! get the command line arguments
