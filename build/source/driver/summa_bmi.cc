@@ -10,7 +10,7 @@ extern "C" int finalize_summa();
 extern "C" int get_num_basins();
 extern "C" int get_latlons(float*, float*);
 extern "C" float get_summa_start_time();
-extern "C" float get_summa_time();
+extern "C" float get_summa_current_time();
 extern "C" float get_summa_end_time();
 extern "C" float get_summa_time_step();
 extern "C" int get_num_ovars();
@@ -184,7 +184,7 @@ int SummaBmi::get_var_nbytes(const char* name, int* dest) const
 
 int SummaBmi::get_current_time(double* dest) const
 {
-    *dest = (double)get_summa_time();
+    *dest = (double)get_summa_current_time();
     return BMI_SUCCESS;
 }
 

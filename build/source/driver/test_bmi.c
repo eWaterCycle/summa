@@ -4,6 +4,7 @@
 
 int main()
 {
+  printf("Running the summa BMI C layer test");
   Bmi* model = new SummaBmi();
   model->initialize("\0");
   int ovar_count = 0;
