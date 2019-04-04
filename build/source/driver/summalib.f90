@@ -585,10 +585,9 @@ end function get_time_step
  end subroutine get_latlons
 
 
- function initialize(dir, iseq) RESULT(istat) bind(c, name="init_summa")
+ function initialize(dir) RESULT(istat) bind(c, name="init_summa")
    use, intrinsic :: iso_c_binding
    character(kind=c_char), dimension(*), intent(in), optional  :: dir
-   integer(kind=c_int), intent(in), optional           :: iseq
    integer(kind=c_int) :: istat
 
    istat=0
@@ -601,7 +600,13 @@ end function get_time_step
   doJacobian=.false.        ! initialize the Jacobian flag
   ncid(:) = integerMissing  ! initialize netcdf file id
 
+  ! if initialize is called with an argument pointing to the file manager file
+  if (present(dir)) then
+    summaFileManagerFile=dir
+  endif
+
   ! get the command line arguments
+  ! if using the BMI interface, make sure summaFileManagerFile before executing getCommandArguments
   call getCommandArguments()
 
   ! define double precision NaNs (shared in globalData)
