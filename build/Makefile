@@ -391,7 +391,7 @@ endif
 # Compile
 all: compile_noah compile_comm compile_summa link clean install
 
-bmi: compile_noah compile_comm compile_bmi link_bmi clean install_test
+test_bmi: compile_noah compile_comm compile_bmi link_bmi clean install_test
 
 check:
 	$(info)
