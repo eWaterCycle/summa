@@ -1094,10 +1094,16 @@ function update_until(tend) result(istat) bind(c, name="update_summa_until")
   istat=0
 
   ! loop through time
+  if (modelTimeStep == 0) then
+    modelTimeStep = 1
+  end if
+
   do while (current < tend .and. modelTimeStep < numtim)
 
     istat = update()
     current = get_current_time()
+
+    modelTimeStep = modelTimeStep + 1
 
   end do  ! (looping through time)
 end function
