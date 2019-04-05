@@ -40,28 +40,14 @@ int SummaBmi::update()
     return BMI_FAILURE;
 }
 
-
-// Do we want to do this in the C layer or in the fortran bmi?
-// int SummaBmi::update_until()
-// {
-//   int status = update_summa_until();
-//   if(status == 0)
-//     {
-//       return BMI_SUCCESS;
-//     }
-//   return BMI_FAILURE;
-// }
-
 int SummaBmi::update_until(double time)
 {
-    double t;
-    int status = this->get_current_time(&t);
-    while(status == BMI_SUCCESS and t < time)
+  int status = update_summa_until();
+  if(status == 0)
     {
-        this->update();
-        status = this->get_current_time(&t);
+      return BMI_SUCCESS;
     }
-    return status;
+  return BMI_FAILURE;
 }
 
 int SummaBmi::update_frac(double time)
@@ -82,7 +68,7 @@ int SummaBmi::finalize()
 
 int SummaBmi::get_component_name(char* name) const
 {
-    strcpy(name, "summa-5.6.1\0");
+    strcpy(name, "summa");
     return BMI_SUCCESS;
 }
 
@@ -198,7 +184,7 @@ int SummaBmi::get_var_nbytes(const char* name, int* dest) const
 
 int SummaBmi::get_current_time(double* dest) const
 {
-    *dest = (double)get_summa_time();
+    *dest = (double)get_summa_current_time();
     return BMI_SUCCESS;
 }
 
