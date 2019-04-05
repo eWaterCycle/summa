@@ -16,7 +16,7 @@ program testbmi
     write(0,*) ""
     write(0,*) "INITIALIZING "
     write(0,*) "-------------------------------------------------------"
-    istat = initialize(dir, iseq)
+    istat = initialize(dir)!, iseq)
 
     count = get_num_basins()
     write(0,*) "The number of basins is", count

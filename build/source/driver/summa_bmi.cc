@@ -3,7 +3,7 @@
 #include "summa_bmi.h"
 
 
-extern "C" int init_summa(char*, int*);
+extern "C" int init_summa(char*);
 extern "C" int update_summa();
 extern "C" int update_summa_until();
 extern "C" int finalize_summa();
@@ -26,7 +26,7 @@ int SummaBmi::initialize(const char *config_file)
 {
     int mem = 0;
     const char* dir = dirname(const_cast<char*>(config_file));
-    init_summa(const_cast<char*>(dir), &mem);
+    init_summa(const_cast<char*>(dir));
     return BMI_SUCCESS;
 }
 

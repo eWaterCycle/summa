@@ -8,7 +8,7 @@ class SummaBmi: public Bmi
   public:
 
     SummaBmi();
-    virtual ~SummaBmi();
+    virtual ~SummaBmi() override;
 
     int initialize(const char *config_file) override;
     int update() override;

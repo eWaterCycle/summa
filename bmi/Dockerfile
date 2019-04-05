@@ -59,7 +59,7 @@ WORKDIR /code
 ADD . /code
 
 # fetch tags and build summa
-RUN git fetch --tags && make -C build/ -f Makefile summa_bmi
+RUN git fetch --tags && make -C build/ -f Makefile_bmi summa_bmi_server
 
 # run summa when running the docker image
 WORKDIR bin

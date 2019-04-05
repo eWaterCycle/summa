@@ -56,6 +56,17 @@ LIBOPENMP =
 # you will need to figure out what the equivalent flags are
 # and may need to update this section
 
+# gfortran compiler on OS X tested with 6 and higher
+# (works on Mac OS X with Macports)
+ifeq "$(FC_ENV)" "gfortran"
+ NCDF_PATH = /opt/local
+ LAPK_PATH = /opt/local
+ # define the lapack libraries - on OS X you need atlas and
+ # blas as well
+ LIBLAPACK = -L$(LAPK_PATH)/lib -llapack -lblas #-latlas
+endif
+
+
 # gfortran
 ifeq "$(FC)" "gfortran"
 
@@ -63,9 +74,9 @@ ifeq "$(isOpenMP)" "yes"
  FLAGS_OMP = -fopenmp
 endif
 
-FLAGS_NOAH = -O3 -ffree-form -fdefault-real-8 -ffree-line-length-none -fmax-errors=0 $(FLAGS_OMP)
-FLAGS_COMM = -O3 -ffree-line-length-none -fmax-errors=0 $(FLAGS_OMP)
-FLAGS_SUMMA = -O3 -ffree-line-length-none -fmax-errors=0 $(FLAGS_OMP)
+FLAGS_NOAH  = -O0 -ffree-form -fdefault-real-8 -ffree-line-length-none -fmax-errors=0 $(FLAGS_OMP)
+FLAGS_COMM  = -O0 -ffree-line-length-none -fmax-errors=0 $(FLAGS_OMP)
+FLAGS_SUMMA = -O0 -ffree-line-length-none -fmax-errors=0 $(FLAGS_OMP)
 
 #FLAGS_NOAH = -p -g -ffree-form -fdefault-real-8 -ffree-line-length-none -fmax-errors=0 -fbacktrace -Wno-unused -Wno-unused-dummy-argument
 #FLAGS_COMM = -p -g -Wall -ffree-line-length-none -fmax-errors=0 -fbacktrace -fcheck=bounds
@@ -81,9 +92,9 @@ ifeq "$(isOpenMP)" "yes"
  FLAGS_OMP = -qopenmp
 endif
 
-FLAGS_NOAH = -O0 -autodouble -noerror_limit -FR -auto -fltconsistency $(FLAGS_OMP)
-FLAGS_COMM = -O0 -FR -auto -fltconsistency -fpe0 $(FLAGS_OMP)
-FLAGS_SUMMA = -O0 -FR -auto -fltconsistency -fpe0 $(FLAGS_OMP)
+FLAGS_NOAH = -O3 -autodouble -noerror_limit -FR -auto -fltconsistency $(FLAGS_OMP)
+FLAGS_COMM = -O3 -FR -auto -fltconsistency -fpe0 $(FLAGS_OMP)
+FLAGS_SUMMA = -O3 -FR -auto -fltconsistency -fpe0 $(FLAGS_OMP)
 
 #FLAGS_NOAH = -O0 -p -g -warn nounused -autodouble -noerror_limit -FR -auto -WB -traceback -fltconsistency
 #FLAGS_COMM = -O0 -p -g -debug -warn all -check all -FR -auto -WB -traceback -fltconsistency -fpe0
@@ -108,16 +119,6 @@ endif
 
 NCDF_PATH = /glade/u/apps/ch/opt/netcdf/4.4.1.1/gnu/7.1.0
 LIBLAPACK = ${NCAR_LIBS_NETLIB}
-endif
-
-# gfortran compiler on OS X tested with 6 and higher
-# (works on Mac OS X with Macports)
-ifeq "$(FC_ENV)" "gfortran"
- NCDF_PATH = /opt/local
- LAPK_PATH = /opt/local
- # define the lapack libraries - on OS X you need atlas and
- # blas as well
- LIBLAPACK = -L$(LAPK_PATH)/lib -llapack -lblas #-latlas
 endif
 
 # gfortran-6 compiler used in Docker builds
@@ -162,14 +163,6 @@ LAPK_PATH = /glade/u/apps/opt/intel/2017u1/compilers_and_libraries/linux/mkl/lib
 #LIBLAPACK = -L$(LAPK_PATH)/lib -llapack
 LIBLAPACK = $(NCAR_LIBS_MKL)
 
-endif
-
-# gfortran Cartesius
-ifeq "$(FC_ENV)" "ifort-cartesius"
- NCDF_PATH = ${SURFSARA_NETCDF_ROOT}
- LAPK_PATH = /hpc/sw/lapack-3.4.2-intel/
- # define the lapack libraries
- LIBLAPACK = -L$(LAPK_PATH)/lib -llapack -lblas
 endif
 
 # Portland compiler
@@ -252,7 +245,6 @@ SUMMA_UTILMS= \
 		updatState.f90 \
 		matrixOper.f90
 UTILMS = $(patsubst %, $(ENGINE_DIR)/%, $(SUMMA_UTILMS))
-
 
 # interface modules
 SUMMA_INTERFACE= \
@@ -354,21 +346,12 @@ SUMMA_ALL = $(NETCDF) $(PRELIM) $(MODRUN) $(SOLVER) $(INTERFACE)
 SUMMA_DRIVER= \
 		multi_driver.f90
 
+
 BMI_TEST = \
 		testbmi.f90
-SUMMA_BMIC_CC = \
-		summa_bmi.cc
-SUMMA_BMIC_H = \
-		summa_bmi.h
-SUMMA_BMIC_TEST = \
-		test_bmi.c
-
 
 DRIVER = $(patsubst %, $(DRIVER_DIR)/%, $(SUMMA_DRIVER))
 BMI = $(patsubst %, $(DRIVER_DIR)/%, $(BMI_TEST))
-BMIC_CC = $(patsubst %, $(DRIVER_DIR)/%,$(SUMMA_BMIC_CC))
-BMIC_H = $(patsubst %, $(DRIVER_DIR)/%,$(SUMMA_BMIC_H))
-BMIC_TEST = $(patsubst %, $(DRIVER_DIR)/%,$(SUMMA_BMIC_TEST))
 
 # Define the executable
 DRIVER__EX = summa.exe
@@ -409,13 +392,9 @@ endif
 #======================================================================
 
 # Compile
+all: compile_noah compile_comm compile_summa link clean install
 
-
-all: summa_bmi_server
-
-summa_bmi_server: interface bmi_server #bmi_test clean
-
-interface: compile_noah compile_comm compile_summa
+bmi: compile_noah compile_comm compile_bmi link_bmi clean install_test
 
 check:
 	$(info)
@@ -441,12 +420,6 @@ update_version:
 	echo "character(len=64), parameter     :: gitBranch = '${GITBRCH}'" >> $(VERSIONFILE)
 	echo "character(len=64), parameter     :: gitHash = '${GITHASH}'" >> $(VERSIONFILE)
 
-bmi_server: summalib.o summa_bmi.o run-bmi-server.o
-	$(CXX) $(LDFLAGS) -o summa_bmi_server summalib.o run-bmi-server.o summa_bmi.o $(shell find ./source/ -name "*.o" ! -name "main.o") -lgfortran `pkg-config --libs protobuf grpc++ grpc` -Wl,--no-as-needed -lgrpc++_reflection -Wl,--as-needed -ldl -lgrpc4bmi
-
-bmi_test: summa_bmi.o test_bmi.o
-	$(CXX) $(LDFLAGS) -o summa_bmi_test summalib.o test_bmi.o summa_bmi.o $(SUMMA_ALL) -lgfortran -lstdc++
-
 # compile Noah-MP routines
 compile_noah:
 	$(FC_EXE) $(FLAGS_NOAH) -c $(NOAHMP)
@@ -457,18 +430,20 @@ compile_comm:
 
 # compile SUMMA routines
 compile_summa: update_version
-	$(FC_EXE) $(FLAGS_SUMMA) -c $(SUMMA_ALL) $(INTERFACE) \
+	$(FC_EXE) $(FLAGS_SUMMA) -c $(SUMMA_ALL) $(DRIVER) \
 	$(INCNETCDF)
 
-run-bmi-server.o:#	run-bmi-server.cc
-	$(CXX) $(CPPFLAGS) -c ./source/driver/run-bmi-server.cc
+compile_bmi: update_version
+	$(FC_EXE) $(FLAGS_SUMMA) -c $(SUMMA_ALL) $(BMI) \
+	$(INCNETCDF)
 
-test_bmi.o:	$(BMIC_TEST)
-	$(CXX) $(CPPFLAGS) -c $(BMIC_TEST)
+# link routines
+link:
+	$(FC_EXE) -pg -g *.o $(LIBNETCDF) $(LIBLAPACK) -o $(DRIVER__EX)
 
-# build the C binding layer
-summa_bmi.o: $(BMIC_CC) $(BMIC_H)
-	$(CXX) $(CPPFLAGS) -c $(BMIC_CC)
+# link routines
+link_bmi:
+	$(FC_EXE) -pg -g *.o $(LIBNETCDF) $(LIBLAPACK) -o $(BMI__EX)
 
 # Remove object files
 clean:
@@ -481,8 +456,8 @@ install_test:
 	@mkdir -p $(EXE_PATH)
 	@mv $(BMI__EX) $(EXE_PATH)
 	$(info Add $(NCDF_PATH)/lib to your LD_LIBRARY_PATH)
-	$(info $(BMI__EX) successfully installed in $(EXE_PATH))
 
+# Copy the executable to the bin directory
 install:
 	@mkdir -p $(EXE_PATH)
 	@mv $(DRIVER__EX) $(EXE_PATH)
