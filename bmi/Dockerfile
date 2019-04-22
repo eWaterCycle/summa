@@ -10,15 +10,16 @@ RUN apt-get update
 RUN apt-get update && \
     apt-get install -y wget git build-essential \
     g++ make cmake curl automake libtool \
-    pkg-config software-properties-common python-software-properties \
+    pkg-config software-properties-common \
     ca-certificates libnetcdff-dev liblapack-dev vim
 
 # install gfortran-6
 RUN add-apt-repository ppa:ubuntu-toolchain-r/test -y \
     && apt-get update \
-    && apt-get install -y --no-install-recommends gfortran-6 \
+    && apt-get install -y --no-install-recommends gfortran \
     && apt-get clean
 
+RUN gfortran --version
 # set environment variables for docker build
 ENV F_MASTER /code
 ENV FC gfortran
@@ -55,13 +56,17 @@ ENV LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/usr/local/lib"
 ENV PATH="${PATH}:/usr/local/bin"
 
 # add code directory
-WORKDIR /code
-ADD . /code
+RUN mkdir -p /build
+WORKDIR /build
+RUN git clone -b develop https://github.com/eWaterCycle/summa.git
+WORKDIR /build/summa
+#ADD . /build
 
 # fetch tags and build summa
-RUN git fetch --tags && make -C build/ -f Makefile_bmi summa_bmi_server
+RUN make -C /build/summa/build -f Makefile_bmi summa_bmi_server
 
 # run summa when running the docker image
-WORKDIR bin
+WORKDIR /build/summa/bin
+RUN ls
 ENTRYPOINT ["./summa_bmi.exe"]
 

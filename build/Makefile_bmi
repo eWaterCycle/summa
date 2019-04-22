@@ -28,7 +28,7 @@ FC_EXE = gfortran
 
 # Define the compiler environment. This is used in the ifeq statements in this
 # Makefile to set the include and library paths and the libraries
-FC_ENV = gfortran
+FC_ENV = gfortran-docker
 
 # Define the NetCDF and LAPACK libraries and path to include files. Note
 # that the default paths defined are those that work for our compilers
@@ -121,7 +121,7 @@ ifeq "$(FC_ENV)" "gfortran"
 endif
 
 # gfortran-6 compiler used in Docker builds
-ifeq "$(FC_ENV)" "gfortran-6-docker"
+ifeq "$(FC_ENV)" "gfortran-docker"
  NCDF_PATH = /usr
  LAPK_PATH = /usr
  # define the lapack libraries
