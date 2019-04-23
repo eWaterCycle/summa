@@ -442,7 +442,7 @@ update_version:
 	echo "character(len=64), parameter     :: gitHash = '${GITHASH}'" >> $(VERSIONFILE)
 
 bmi_server: summalib.o summa_bmi.o run-bmi-server.o
-	$(CXX) $(LDFLAGS) -o summa_bmi_server summalib.o run-bmi-server.o summa_bmi.o $(shell find ./source/ -name "*.o" ! -name "main.o") -lgfortran `pkg-config --libs protobuf grpc++ grpc` -Wl,--no-as-needed -lgrpc++_reflection -Wl,--as-needed -ldl -lgrpc4bmi
+	$(CXX) $(LDFLAGS) -o summa_bmi_server summalib.o run-bmi-server.o summa_bmi.o $(shell find ./) $(LIBNETCDF) $(LIBLAPACK) -lgfortran `pkg-config --libs protobuf grpc++ grpc` -Wl,--no-as-needed -lgrpc++_reflection -Wl,--as-needed -ldl -lgrpc4bmi
 
 bmi_test: summa_bmi.o test_bmi.o
 	$(CXX) $(LDFLAGS) -o summa_bmi_test summalib.o test_bmi.o summa_bmi.o $(SUMMA_ALL) -lgfortran -lstdc++
