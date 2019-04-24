@@ -66,7 +66,6 @@ WORKDIR /build/summa
 RUN make -C /build/summa/build -f Makefile_bmi summa_bmi_server
 
 # run summa when running the docker image
-WORKDIR /build/summa/bin
-RUN ls
-ENTRYPOINT ["./summa_bmi.exe"]
+WORKDIR /build/summa/build
+ENTRYPOINT ["./summa_bmi_server"]
 
