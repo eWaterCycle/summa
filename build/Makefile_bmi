@@ -372,7 +372,7 @@ BMIC_TEST = $(patsubst %, $(DRIVER_DIR)/%,$(SUMMA_BMIC_TEST))
 
 # Define the executable
 DRIVER__EX = summa.exe
-BMI__EX = test_bmi.exe
+BMI__EX = summa_bmi.exe
 
 # Define version number
 VERSIONFILE = $(DRIVER_DIR)/summaversion.inc
@@ -413,7 +413,7 @@ endif
 
 all: summa_bmi_server
 
-summa_bmi_server: interface bmi_server clean
+summa_bmi_server: interface bmi_server clean install_bmi
 
 interface: compile_noah compile_comm compile_summa
 
@@ -477,7 +477,7 @@ clean:
 	rm -f soil_veg_gen_parm__genmod.f90
 
 # Copy the executable to the bin directory
-install_test:
+install_bmi:
 	@mkdir -p $(EXE_PATH)
 	@mv $(BMI__EX) $(EXE_PATH)
 	$(info Add $(NCDF_PATH)/lib to your LD_LIBRARY_PATH)
